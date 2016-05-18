@@ -86,7 +86,8 @@ func (g *Group) NewGroup(path string) *Group {
 // 	GET /posts will redirect to /posts/.
 // 	GET /posts/ will match normally.
 // 	POST /posts will redirect to /posts/, because the GET method used a trailing slash.
-func (g *Group) Handle(method string, path string, handler HandlerFunc) {
+
+func (g *Group) setHandler(method string, path string, handler InternalHandlerFunc) {
 	checkPath(path)
 	path = g.path + path
 	if len(path) == 0 {
@@ -102,11 +103,16 @@ func (g *Group) Handle(method string, path string, handler HandlerFunc) {
 	if addSlash {
 		node.addSlash = true
 	}
+
 	node.setHandler(method, handler, false)
 
 	if g.mux.HeadCanUseGet && method == "GET" && node.leafHandler["HEAD"] == nil {
 		node.setHandler("HEAD", handler, true)
 	}
+}
+
+func (g *Group) Handle(method string, path string, handler HandlerFunc) {
+	g.setHandler(method, path, createHandlerWrapper(handler))
 }
 
 // Syntactic sugar for Handle("GET", path, handler)

@@ -47,16 +47,11 @@ const (
 	URLPath                      // Use r.URL.Path
 )
 
-type TreeMux struct {
+type BaseTreeMux struct {
 	root *node
-
-	Group
 
 	// The default PanicHandler just returns a 500 code.
 	PanicHandler PanicHandler
-
-	// The default NotFoundHandler is http.NotFound.
-	NotFoundHandler func(w http.ResponseWriter, r *http.Request)
 
 	// Any OPTIONS request that matches a path without its own OPTIONS handler will use this handler,
 	// if set, instead of calling MethodNotAllowedHandler.
@@ -70,6 +65,9 @@ type TreeMux struct {
 	// handler function.
 	MethodNotAllowedHandler func(w http.ResponseWriter, r *http.Request,
 		methods map[string]HandlerFunc)
+
+	// The default NotFoundHandler is http.NotFound.
+	NotFoundHandler func(w http.ResponseWriter, r *http.Request)
 
 	// HeadCanUseGet allows the router to use the GET handler to respond to
 	// HEAD requests if no explicit HEAD handler has been added for the
@@ -109,8 +107,13 @@ type TreeMux struct {
 	PathSource PathSource
 }
 
+type TreeMux struct {
+	BaseTreeMux
+	Group
+}
+
 // Dump returns a text representation of the routing tree.
-func (t *TreeMux) Dump() string {
+func (t *BaseTreeMux) Dump() string {
 	return t.root.dumpTree("", "")
 }
 
@@ -120,7 +123,7 @@ func (t *TreeMux) serveHTTPPanic(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (t *TreeMux) redirectStatusCode(method string) (int, bool) {
+func (t *BaseTreeMux) redirectStatusCode(method string) (int, bool) {
 	var behavior RedirectBehavior
 	var ok bool
 	if behavior, ok = t.RedirectMethodBehavior[method]; !ok {
@@ -151,7 +154,7 @@ func redirect(w http.ResponseWriter, r *http.Request, newPath string, statusCode
 	http.Redirect(w, r, newURL.String(), statusCode)
 }
 
-func (t *TreeMux) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (t *BaseTreeMux) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	if t.PanicHandler != nil {
 		defer t.serveHTTPPanic(w, r)
@@ -262,15 +265,17 @@ func MethodNotAllowedHandler(w http.ResponseWriter, r *http.Request,
 
 func New() *TreeMux {
 	tm := &TreeMux{
-		root:                    &node{path: "/"},
-		NotFoundHandler:         http.NotFound,
+		BaseTreeMux: {
+			HeadCanUseGet:          true,
+			RedirectTrailingSlash:  true,
+			RedirectCleanPath:      true,
+			RedirectBehavior:       Redirect301,
+			RedirectMethodBehavior: make(map[string]RedirectBehavior),
+			PathSource:             RequestURI,
+			root:                   &node{path: "/"},
+			NotFoundHandler:        http.NotFound,
+		},
 		MethodNotAllowedHandler: MethodNotAllowedHandler,
-		HeadCanUseGet:           true,
-		RedirectTrailingSlash:   true,
-		RedirectCleanPath:       true,
-		RedirectBehavior:        Redirect301,
-		RedirectMethodBehavior:  make(map[string]RedirectBehavior),
-		PathSource:              RequestURI,
 	}
 	tm.Group.mux = tm
 	return tm
