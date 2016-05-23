@@ -16,6 +16,7 @@ func TestMethodNotAllowedFallthrough(t *testing.T) {
 	var matchedParams map[string]string
 
 	router := New()
+	router.PanicHandler = nil // So that tests show real errors
 
 	addRoute := func(method, path string) {
 		router.Handle(method, path, func(w http.ResponseWriter, r *http.Request) {

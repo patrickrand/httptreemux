@@ -82,6 +82,7 @@ func testMethods(t *testing.T, newRequest RequestCreator, headCanUseGet bool) {
 	}
 
 	router := New()
+	router.PanicHandler = nil // So that tests show real errors
 	router.HeadCanUseGet = headCanUseGet
 	router.GET("/user/:param", makeHandler("GET"))
 	router.POST("/user/:param", makeHandler("POST"))
@@ -128,6 +129,7 @@ func TestNotFound(t *testing.T) {
 	}
 
 	router := New()
+	router.PanicHandler = nil // So that tests show real errors
 	router.GET("/user/abc", simpleHandler)
 
 	w := httptest.NewRecorder()
@@ -156,7 +158,7 @@ func TestMethodNotAllowedHandler(t *testing.T) {
 
 		expected := []string{"GET", "PUT", "DELETE", "HEAD"}
 		allowed := make([]string, 0)
-		methods := r.Context().Value(MethodsContextKey).(map[string]http.Handler)
+		methods := r.Context().Value(MethodsContextKey).(map[string]http.HandlerFunc)
 		for m := range methods {
 			allowed = append(allowed, m)
 		}
@@ -171,6 +173,7 @@ func TestMethodNotAllowedHandler(t *testing.T) {
 	}
 
 	router := New()
+	router.PanicHandler = nil // So that tests show real errors
 	router.GET("/user/abc", simpleHandler)
 	router.PUT("/user/abc", simpleHandler)
 	router.DELETE("/user/abc", simpleHandler)
@@ -215,6 +218,7 @@ func TestOptionsHandler(t *testing.T) {
 	}
 
 	router := New()
+	router.PanicHandler = nil // So that tests show real errors
 	router.GET("/user/abc", simpleHandler)
 	router.PUT("/user/abc", simpleHandler)
 	router.DELETE("/user/abc", simpleHandler)
@@ -355,6 +359,7 @@ func testRedirect(t *testing.T, defaultBehavior, getBehavior, postBehavior Redir
 	}
 
 	router := New()
+	router.PanicHandler = nil // So that tests show real errors
 	router.RedirectBehavior = defaultBehavior
 
 	var expectedCodeMap = map[string]int{"PUT": behaviorToCode(defaultBehavior)}
@@ -465,6 +470,7 @@ func testRedirect(t *testing.T, defaultBehavior, getBehavior, postBehavior Redir
 
 func TestSkipRedirect(t *testing.T) {
 	router := New()
+	router.PanicHandler = nil // So that tests show real errors
 	router.RedirectTrailingSlash = false
 	router.RedirectCleanPath = false
 	router.GET("/slash/", simpleHandler)
@@ -494,6 +500,7 @@ func TestSkipRedirect(t *testing.T) {
 
 func TestCatchAllTrailingSlashRedirect(t *testing.T) {
 	router := New()
+	router.PanicHandler = nil // So that tests show real errors
 	redirectSettings := []bool{false, true}
 
 	router.GET("/abc/*path", simpleHandler)
@@ -542,6 +549,7 @@ func TestRoot(t *testing.T) {
 			handlerCalled = true
 		}
 		router := New()
+		router.PanicHandler = nil // So that tests show real errors
 		router.GET("/", handler)
 
 		r, _ := scenario.RequestCreator("GET", "/", nil)
@@ -563,6 +571,7 @@ func TestWildcardAtSplitNode(t *testing.T) {
 	}
 
 	router := New()
+	router.PanicHandler = nil // So that tests show real errors
 	router.GET("/pumpkin", simpleHandler)
 	router.GET("/passing", simpleHandler)
 	router.GET("/:slug", simpleHandler)
@@ -615,6 +624,7 @@ func TestSlash(t *testing.T) {
 		param = params["year"] + " " + params["month"]
 	}
 	router := New()
+	router.PanicHandler = nil // So that tests show real errors
 	router.GET("/abc/:param", handler)
 	router.GET("/year/:year/month/:month", ymHandler)
 
@@ -643,6 +653,7 @@ func TestQueryString(t *testing.T) {
 			param = params["param"]
 		}
 		router := New()
+		router.PanicHandler = nil // So that tests show real errors
 		router.GET("/static", handler)
 		router.GET("/wildcard/:param", handler)
 		router.GET("/catchall/*param", handler)
@@ -681,6 +692,7 @@ func TestPathSource(t *testing.T) {
 		called = "bananas"
 	}
 	router := New()
+	router.PanicHandler = nil // So that tests show real errors
 	router.GET("/apples", appleHandler)
 	router.GET("/bananas", bananaHandler)
 
@@ -710,6 +722,7 @@ func TestPathSource(t *testing.T) {
 
 func BenchmarkRouterSimple(b *testing.B) {
 	router := New()
+	router.PanicHandler = nil // So that tests show real errors
 
 	router.GET("/", simpleHandler)
 	router.GET("/user/dimfeld", simpleHandler)
@@ -745,6 +758,7 @@ func BenchmarkRouterRootWithoutPanicHandler(b *testing.B) {
 
 func BenchmarkRouterParam(b *testing.B) {
 	router := New()
+	router.PanicHandler = nil // So that tests show real errors
 
 	router.GET("/", simpleHandler)
 	router.GET("/user/:name", simpleHandler)
