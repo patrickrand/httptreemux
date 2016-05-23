@@ -22,10 +22,7 @@ func TestMethodNotAllowedFallthrough(t *testing.T) {
 		router.Handle(method, path, func(w http.ResponseWriter, r *http.Request) {
 			matchedMethod = method
 			matchedPath = path
-			matchedParams = nil
-			if p, ok := r.Context().Value(ParamsContextKey).(map[string]string); ok {
-				matchedParams = p
-			}
+			matchedParams = ContextParams(r.Context())
 		})
 	}
 

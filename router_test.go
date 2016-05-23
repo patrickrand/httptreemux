@@ -158,7 +158,7 @@ func TestMethodNotAllowedHandler(t *testing.T) {
 
 		expected := []string{"GET", "PUT", "DELETE", "HEAD"}
 		allowed := make([]string, 0)
-		methods := r.Context().Value(MethodsContextKey).(map[string]http.HandlerFunc)
+		methods := ContextMethods(r.Context())
 		for m := range methods {
 			allowed = append(allowed, m)
 		}
@@ -300,7 +300,7 @@ func TestPanic(t *testing.T) {
 	sawPanic := false
 	var panicVal string
 	router.PanicHandler = func(w http.ResponseWriter, r *http.Request) {
-		panicVal = r.Context().Value(ErrorContextKey).(string)
+		panicVal = ContextError(r.Context()).(string)
 		sawPanic = true
 	}
 
@@ -565,8 +565,7 @@ func TestRoot(t *testing.T) {
 func TestWildcardAtSplitNode(t *testing.T) {
 	var suppliedParam string
 	simpleHandler := func(w http.ResponseWriter, r *http.Request) {
-		params := r.Context().Value(ParamsContextKey).(map[string]string)
-		t.Log(params)
+		params := ContextParams(r.Context())
 		suppliedParam, _ = params["slug"]
 	}
 
@@ -616,11 +615,11 @@ func TestWildcardAtSplitNode(t *testing.T) {
 func TestSlash(t *testing.T) {
 	param := ""
 	handler := func(w http.ResponseWriter, r *http.Request) {
-		params := r.Context().Value(ParamsContextKey).(map[string]string)
+		params := ContextParams(r.Context())
 		param = params["param"]
 	}
 	ymHandler := func(w http.ResponseWriter, r *http.Request) {
-		params := r.Context().Value(ParamsContextKey).(map[string]string)
+		params := ContextParams(r.Context())
 		param = params["year"] + " " + params["month"]
 	}
 	router := New()
@@ -650,8 +649,9 @@ func TestQueryString(t *testing.T) {
 		param := ""
 		handler := func(w http.ResponseWriter, r *http.Request) {
 			param = ""
-			if p, ok := r.Context().Value(ParamsContextKey).(map[string]string); ok {
-				param = p["param"]
+			params := ContextParams(r.Context())
+			if params != nil {
+				param = params["param"]
 			}
 		}
 		router := New()

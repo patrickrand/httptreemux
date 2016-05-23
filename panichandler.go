@@ -18,7 +18,7 @@ func SimplePanicHandler(w http.ResponseWriter, r *http.Request) {
 // This was taken from github.com/gocraft/web, which adapted it from the Traffic project.
 func ShowErrorsPanicHandler(w http.ResponseWriter, r *http.Request) {
 	const size = 4096
-	err := r.Context().Value(ErrorContextKey)
+	err := r.Context().Value(errorContextKey)
 	stack := make([]byte, size)
 	stack = stack[:runtime.Stack(stack, false)]
 	renderPrettyError(w, r, err, stack)

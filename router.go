@@ -34,7 +34,7 @@ type RedirectBehavior int
 
 type PathSource int
 
-type ContextVar int
+type contextVar int
 
 const (
 	Redirect301 RedirectBehavior = iota // Return 301 Moved Permanently
@@ -45,9 +45,9 @@ const (
 	RequestURI PathSource = iota // Use r.RequestURI
 	URLPath                      // Use r.URL.Path
 
-	ErrorContextKey ContextVar = iota
+	errorContextKey contextVar = iota
 	ParamsContextKey
-	MethodsContextKey
+	methodsContextKey
 )
 
 type TreeMux struct {
@@ -118,7 +118,7 @@ func (t *TreeMux) Dump() string {
 
 func (t *TreeMux) serveHTTPPanic(w http.ResponseWriter, r *http.Request) {
 	if err := recover(); err != nil {
-		r = r.WithContext(context.WithValue(r.Context(), ErrorContextKey, err))
+		r = r.WithContext(context.WithValue(r.Context(), errorContextKey, err))
 		t.PanicHandler(w, r)
 	}
 }
@@ -226,7 +226,7 @@ func (t *TreeMux) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if handler == nil {
-			ctx := context.WithValue(r.Context(), MethodsContextKey, n.leafHandler)
+			ctx := context.WithValue(r.Context(), methodsContextKey, n.leafHandler)
 			if paramMap != nil {
 				ctx = context.WithValue(ctx, ParamsContextKey, paramMap)
 			}
@@ -263,7 +263,7 @@ func (t *TreeMux) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 // requested method. It simply writes the status code http.StatusMethodNotAllowed.
 func MethodNotAllowedHandler(w http.ResponseWriter, r *http.Request) {
 
-	methods := r.Context().Value(MethodsContextKey).(map[string]http.HandlerFunc)
+	methods := ContextMethods(r.Context())
 	for m := range methods {
 		w.Header().Add("Allow", m)
 	}
