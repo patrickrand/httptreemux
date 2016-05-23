@@ -649,8 +649,10 @@ func TestQueryString(t *testing.T) {
 		t.Log(scenario.description)
 		param := ""
 		handler := func(w http.ResponseWriter, r *http.Request) {
-			params := r.Context().Value(ParamsContextKey).(map[string]string)
-			param = params["param"]
+			param = ""
+			if p, ok := r.Context().Value(ParamsContextKey).(map[string]string); ok {
+				param = p["param"]
+			}
 		}
 		router := New()
 		router.PanicHandler = nil // So that tests show real errors
