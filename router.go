@@ -227,7 +227,7 @@ func (t *TreeMux) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 		if handler == nil {
 			ctx := context.WithValue(r.Context(), MethodsContextKey, n.leafHandler)
-			ctx = context.WithValue(ctx, ParamsContextKey, params)
+			ctx = context.WithValue(ctx, ParamsContextKey, paramMap)
 			r = r.WithContext(ctx)
 			t.MethodNotAllowedHandler(w, r)
 			return
@@ -250,7 +250,7 @@ func (t *TreeMux) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	r = r.WithContext(context.WithValue(r.Context(), ParamsContextKey, params))
+	r = r.WithContext(context.WithValue(r.Context(), ParamsContextKey, paramMap))
 	handler(w, r)
 }
 
