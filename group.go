@@ -2,6 +2,7 @@ package httptreemux
 
 import (
 	"fmt"
+	"net/http"
 )
 
 type Group struct {
@@ -87,7 +88,7 @@ func (g *Group) NewGroup(path string) *Group {
 // 	GET /posts/ will match normally.
 // 	POST /posts will redirect to /posts/, because the GET method used a trailing slash.
 
-func (g *Group) setHandler(method string, path string, handler InternalHandlerFunc) {
+func (g *Group) setHandler(method string, path string, handler http.HandlerFunc) {
 	checkPath(path)
 	path = g.path + path
 	if len(path) == 0 {
@@ -111,42 +112,42 @@ func (g *Group) setHandler(method string, path string, handler InternalHandlerFu
 	}
 }
 
-func (g *Group) Handle(method string, path string, handler HandlerFunc) {
-	g.setHandler(method, path, createHandlerWrapper(handler))
+func (g *Group) Handle(method string, path string, handler http.HandlerFunc) {
+	g.setHandler(method, path, handler)
 }
 
 // Syntactic sugar for Handle("GET", path, handler)
-func (g *Group) GET(path string, handler HandlerFunc) {
+func (g *Group) GET(path string, handler http.HandlerFunc) {
 	g.Handle("GET", path, handler)
 }
 
 // Syntactic sugar for Handle("POST", path, handler)
-func (g *Group) POST(path string, handler HandlerFunc) {
+func (g *Group) POST(path string, handler http.HandlerFunc) {
 	g.Handle("POST", path, handler)
 }
 
 // Syntactic sugar for Handle("PUT", path, handler)
-func (g *Group) PUT(path string, handler HandlerFunc) {
+func (g *Group) PUT(path string, handler http.HandlerFunc) {
 	g.Handle("PUT", path, handler)
 }
 
 // Syntactic sugar for Handle("DELETE", path, handler)
-func (g *Group) DELETE(path string, handler HandlerFunc) {
+func (g *Group) DELETE(path string, handler http.HandlerFunc) {
 	g.Handle("DELETE", path, handler)
 }
 
 // Syntactic sugar for Handle("PATCH", path, handler)
-func (g *Group) PATCH(path string, handler HandlerFunc) {
+func (g *Group) PATCH(path string, handler http.HandlerFunc) {
 	g.Handle("PATCH", path, handler)
 }
 
 // Syntactic sugar for Handle("HEAD", path, handler)
-func (g *Group) HEAD(path string, handler HandlerFunc) {
+func (g *Group) HEAD(path string, handler http.HandlerFunc) {
 	g.Handle("HEAD", path, handler)
 }
 
 // Syntactic sugar for Handle("OPTIONS", path, handler)
-func (g *Group) OPTIONS(path string, handler HandlerFunc) {
+func (g *Group) OPTIONS(path string, handler http.HandlerFunc) {
 	g.Handle("OPTIONS", path, handler)
 }
 
